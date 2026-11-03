@@ -2,6 +2,7 @@ const dns = require("dns");
 dns.setServers(["8.8.8.8"]);
 
 const express = require("express");
+app.use(express.static("public"));
 const path = require("path");
 const dotenv = require("dotenv");
 const cors = require("cors");

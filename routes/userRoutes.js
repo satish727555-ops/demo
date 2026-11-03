@@ -1,11 +1,13 @@
-﻿const express = require("express");
+const express = require("express");
 const router = express.Router();
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/User");
+const PendingUser = require("../models/PendingUser");
 const dbConnect = require("../models/dbConnect");
+
 const {
     protect,
     adminOnly
@@ -15,11 +17,18 @@ const sendOTP = require("../middleware/utils/sendEmail");
 
 
 /* =====================================================
+   PASSWORD MODE
+===================================================== */
+
+const USE_HASH = process.env.USE_HASH === "true";
+
+
+/* =====================================================
    HELPERS
 ===================================================== */
 
 const normalizeEmail = (email) => {
-    return String(email).toLowerCase().trim();
+    return String(email || "").toLowerCase().trim();
 };
 
 
@@ -42,11 +51,7 @@ const generateStudentId = () => {
 };
 
 
-const errorResponse = (
-    res,
-    status,
-    message
-) => {
+const errorResponse = (res, status, message) => {
     return res.status(status).json({
         success: false,
         message
@@ -59,9 +64,7 @@ const errorResponse = (
 ===================================================== */
 
 router.get("/register", (req, res) => {
-
     res.render("register");
-
 });
 
 
@@ -80,7 +83,6 @@ router.post("/register", async (req, res) => {
             name,
             email,
             password,
-
             studentId,
             rollNo,
             phone,
@@ -90,22 +92,19 @@ router.post("/register", async (req, res) => {
             university,
             dateOfBirth,
             address
-
         } = req.body;
 
 
         /* ================= NAME ================= */
 
-        const studentName =
-            (username || name || "").trim();
+        const studentName = String(
+            username || name || ""
+        ).trim();
 
 
         /* ================= EMAIL ================= */
 
-        const normalizedEmail =
-            email
-                ? normalizeEmail(email)
-                : "";
+        const normalizedEmail = normalizeEmail(email);
 
 
         /* ================= BASIC VALIDATION ================= */
@@ -115,35 +114,29 @@ router.post("/register", async (req, res) => {
             !normalizedEmail ||
             !password
         ) {
-
             return errorResponse(
                 res,
                 400,
                 "Name, email and password are required."
             );
-
         }
 
 
         if (studentName.length < 3) {
-
             return errorResponse(
                 res,
                 400,
                 "Name must contain at least 3 characters."
             );
-
         }
 
 
         if (password.length < 8) {
-
             return errorResponse(
                 res,
                 400,
                 "Password must contain at least 8 characters."
             );
-
         }
 
 
@@ -156,40 +149,33 @@ router.post("/register", async (req, res) => {
             !college ||
             !university
         ) {
-
             return errorResponse(
                 res,
                 400,
                 "Please provide all required BCA student details."
             );
-
         }
 
 
-        const cleanRollNo =
-            String(rollNo)
-                .trim()
-                .toUpperCase();
+        const cleanRollNo = String(rollNo)
+            .trim()
+            .toUpperCase();
 
 
-        const cleanPhone =
-            String(phone).trim();
+        const cleanPhone = String(phone).trim();
 
 
-        const semesterNumber =
-            Number(semester);
+        const semesterNumber = Number(semester);
 
 
         /* ================= PHONE VALIDATION ================= */
 
         if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
-
             return errorResponse(
                 res,
                 400,
                 "Please enter a valid 10-digit Indian mobile number."
             );
-
         }
 
 
@@ -200,55 +186,85 @@ router.post("/register", async (req, res) => {
             semesterNumber < 1 ||
             semesterNumber > 6
         ) {
-
             return errorResponse(
                 res,
                 400,
                 "Semester must be between 1 and 6."
             );
-
         }
 
 
-        /* ================= EMAIL DUPLICATE ================= */
+        /* =====================================================
+           CHECK PERMANENT USER
+        ===================================================== */
 
-        const existingEmail =
-            await User.findOne({
-                email: normalizedEmail
-            });
-
+        const existingEmail = await User.findOne({
+            email: normalizedEmail
+        });
 
         if (existingEmail) {
-
             return errorResponse(
                 res,
                 409,
                 "Email is already registered."
             );
-
         }
 
 
-        /* ================= ROLL NUMBER DUPLICATE ================= */
-
-        const existingRollNo =
-            await User.findOne({
-                rollNo: cleanRollNo
-            });
-
+        const existingRollNo = await User.findOne({
+            rollNo: cleanRollNo
+        });
 
         if (existingRollNo) {
-
             return errorResponse(
                 res,
                 409,
                 "Roll number is already registered."
             );
+        }
+
+
+        /* =====================================================
+           CHECK PENDING USER
+        ===================================================== */
+
+        const existingPendingEmail =
+            await PendingUser.findOne({
+                email: normalizedEmail
+            });
+
+
+        if (existingPendingEmail) {
+
+            await PendingUser.deleteOne({
+                _id: existingPendingEmail._id
+            });
 
         }
 
 
-        /* ================= STUDENT ID ================= */
+        /* ================= ROLL NUMBER CHECK ================= */
+
+        const existingPendingRoll =
+            await PendingUser.findOne({
+                rollNo: cleanRollNo
+            });
+
+
+        if (existingPendingRoll) {
+
+            return errorResponse(
+                res,
+                409,
+                "Roll number is already waiting for OTP verification."
+            );
+
+        }
+
+
+        /* =====================================================
+           STUDENT ID
+        ===================================================== */
 
         const finalStudentId =
             studentId
@@ -258,8 +274,6 @@ router.post("/register", async (req, res) => {
                 : generateStudentId();
 
 
-        /* ================= STUDENT ID DUPLICATE ================= */
-
         const existingStudentId =
             await User.findOne({
                 studentId: finalStudentId
@@ -267,25 +281,43 @@ router.post("/register", async (req, res) => {
 
 
         if (existingStudentId) {
-
             return errorResponse(
                 res,
                 409,
                 "Student ID is already registered."
             );
-
         }
 
 
-        /* ================= OTP ================= */
+        /* =====================================================
+           PASSWORD
+        ===================================================== */
+
+        let savedPassword;
+
+if (USE_HASH) {
+    savedPassword = await bcrypt.hash(password, 12);
+} else {
+    savedPassword = password;
+}
+
+
+        /* =====================================================
+           OTP
+        ===================================================== */
 
         const otp = generateOTP();
 
 
-        /* ================= CREATE STUDENT ================= */
+        /* =====================================================
+           CREATE PENDING USER
+           
+           IMPORTANT:
+           User collection mein abhi data save nahi hoga.
+        ===================================================== */
 
-        const user =
-            await User.create({
+        const pendingUser =
+            await PendingUser.create({
 
                 studentId:
                     finalStudentId,
@@ -297,10 +329,7 @@ router.post("/register", async (req, res) => {
                     normalizedEmail,
 
                 password:
-                    await bcrypt.hash(
-                        password,
-                        12
-                    ),
+                    savedPassword,
 
                 phone:
                     cleanPhone,
@@ -332,13 +361,8 @@ router.post("/register", async (req, res) => {
                         ? String(address).trim()
                         : "",
 
-                role:
-                    "user",
-
-                isVerified:
-                    false,
-
-                otp,
+                otp:
+                    otp,
 
                 otpExpires:
                     otpExpiry()
@@ -346,7 +370,9 @@ router.post("/register", async (req, res) => {
             });
 
 
-        /* ================= SEND OTP ================= */
+        /* =====================================================
+           SEND OTP
+        ===================================================== */
 
         try {
 
@@ -357,14 +383,18 @@ router.post("/register", async (req, res) => {
 
         } catch (emailError) {
 
-            await User.deleteOne({
-                _id: user._id
-            });
-
             console.error(
                 "OTP Email Error:",
-                emailError.message
+                emailError
             );
+
+
+            /* ================= DELETE PENDING USER ================= */
+
+            await PendingUser.deleteOne({
+                _id: pendingUser._id
+            });
+
 
             return errorResponse(
                 res,
@@ -375,17 +405,22 @@ router.post("/register", async (req, res) => {
         }
 
 
-        /* ================= SUCCESS ================= */
+        /* =====================================================
+           SUCCESS
+        ===================================================== */
 
         return res.status(201).json({
 
             success: true,
 
             message:
-                "Student registered successfully. OTP sent to your email.",
+                "OTP sent successfully. Please verify your email.",
 
             studentId:
-                user.studentId
+                pendingUser.studentId,
+
+            email:
+                pendingUser.email
 
         });
 
@@ -396,6 +431,7 @@ router.post("/register", async (req, res) => {
             "Register Error:",
             error
         );
+
 
         return errorResponse(
             res,
@@ -412,279 +448,376 @@ router.post("/register", async (req, res) => {
    VERIFY OTP
 ===================================================== */
 
-router.post(
-    "/verify-otp",
-    async (req, res) => {
+router.post("/verify-otp", async (req, res) => {
 
-        try {
+    try {
 
-            await dbConnect();
+        await dbConnect();
 
-            const {
-                email,
-                otp
-            } = req.body;
+        const {
+            email,
+            otp
+        } = req.body;
 
 
-            if (!email || !otp) {
-
-                return errorResponse(
-                    res,
-                    400,
-                    "Email and OTP are required."
-                );
-
-            }
-
-
-            const user =
-                await User.findOne({
-
-                    email:
-                        normalizeEmail(email)
-
-                });
-
-
-            if (!user) {
-
-                return errorResponse(
-                    res,
-                    404,
-                    "Student not found."
-                );
-
-            }
-
-
-            if (user.isVerified) {
-
-                return errorResponse(
-                    res,
-                    409,
-                    "Email is already verified."
-                );
-
-            }
-
-
-            if (
-                !user.otp ||
-                !user.otpExpires
-            ) {
-
-                return errorResponse(
-                    res,
-                    400,
-                    "OTP is not available. Please request a new OTP."
-                );
-
-            }
-
-
-            if (
-                user.otpExpires < new Date()
-            ) {
-
-                return errorResponse(
-                    res,
-                    400,
-                    "OTP has expired. Please request a new OTP."
-                );
-
-            }
-
-
-            if (
-                String(user.otp) !==
-                String(otp).trim()
-            ) {
-
-                return errorResponse(
-                    res,
-                    400,
-                    "Invalid OTP."
-                );
-
-            }
-
-
-            /* ================= VERIFY ================= */
-
-            user.isVerified = true;
-
-            user.otp = null;
-
-            user.otpExpires = null;
-
-
-            await user.save();
-
-
-            return res.status(200).json({
-
-                success: true,
-
-                message:
-                    "Email verified successfully.",
-
-                student: {
-
-                    studentId:
-                        user.studentId,
-
-                    name:
-                        user.name,
-
-                    email:
-                        user.email,
-
-                    rollNo:
-                        user.rollNo,
-
-                    semester:
-                        user.semester,
-
-                    course:
-                        user.course
-
-                },
-
-                redirect:
-                    "/api/users/login"
-
-            });
-
-
-        } catch (error) {
-
-            console.error(
-                "OTP Verification Error:",
-                error
-            );
+        if (!email || !otp) {
 
             return errorResponse(
                 res,
-                500,
-                "Unable to verify OTP. Please try again."
+                400,
+                "Email and OTP are required."
             );
 
         }
 
+
+        const normalizedEmail =
+            normalizeEmail(email);
+
+
+        /* =====================================================
+           FIND PENDING USER
+        ===================================================== */
+
+        const pendingUser =
+            await PendingUser.findOne({
+                email: normalizedEmail
+            });
+
+
+        if (!pendingUser) {
+
+            return errorResponse(
+                res,
+                404,
+                "Registration not found or OTP has expired. Please register again."
+            );
+
+        }
+
+
+        /* =====================================================
+           CHECK OTP EXPIRY
+        ===================================================== */
+
+        if (
+            !pendingUser.otpExpires ||
+            pendingUser.otpExpires < new Date()
+        ) {
+
+            await PendingUser.deleteOne({
+                _id: pendingUser._id
+            });
+
+            return errorResponse(
+                res,
+                400,
+                "OTP has expired. Please register again."
+            );
+
+        }
+
+
+        /* =====================================================
+           CHECK OTP
+        ===================================================== */
+
+        if (
+            String(pendingUser.otp) !==
+            String(otp).trim()
+        ) {
+
+            return errorResponse(
+                res,
+                400,
+                "Invalid OTP."
+            );
+
+        }
+
+
+        /* =====================================================
+           FINAL DUPLICATE CHECK
+        ===================================================== */
+
+        const existingUser =
+            await User.findOne({
+                $or: [
+                    {
+                        email:
+                            pendingUser.email
+                    },
+                    {
+                        rollNo:
+                            pendingUser.rollNo
+                    },
+                    {
+                        studentId:
+                            pendingUser.studentId
+                    }
+                ]
+            });
+
+
+        if (existingUser) {
+
+            await PendingUser.deleteOne({
+                _id: pendingUser._id
+            });
+
+            return errorResponse(
+                res,
+                409,
+                "Student is already registered."
+            );
+
+        }
+
+
+        /* =====================================================
+           MOVE PENDING USER -> USER
+           
+           YAHAN PERMANENT DATA SAVE HOGA
+        ===================================================== */
+
+        const user =
+            await User.create({
+
+                studentId:
+                    pendingUser.studentId,
+
+                name:
+                    pendingUser.name,
+
+                email:
+                    pendingUser.email,
+
+                password:
+                    pendingUser.password,
+
+                phone:
+                    pendingUser.phone,
+
+                rollNo:
+                    pendingUser.rollNo,
+
+                semester:
+                    pendingUser.semester,
+
+                course:
+                    pendingUser.course,
+
+                college:
+                    pendingUser.college,
+
+                university:
+                    pendingUser.university,
+
+                dateOfBirth:
+                    pendingUser.dateOfBirth,
+
+                address:
+                    pendingUser.address,
+
+                role:
+                    "user",
+
+                isVerified:
+                    true,
+
+                otp:
+                    null,
+
+                otpExpires:
+                    null
+
+            });
+
+
+        /* =====================================================
+           DELETE PENDING USER
+        ===================================================== */
+
+        await PendingUser.deleteOne({
+            _id: pendingUser._id
+        });
+
+
+        /* =====================================================
+           SUCCESS
+        ===================================================== */
+
+        return res.status(200).json({
+
+            success:
+                true,
+
+            message:
+                "Email verified successfully. Registration completed.",
+
+            student: {
+
+                studentId:
+                    user.studentId,
+
+                name:
+                    user.name,
+
+                email:
+                    user.email,
+
+                rollNo:
+                    user.rollNo,
+
+                semester:
+                    user.semester,
+
+                course:
+                    user.course
+
+            },
+
+            redirect:
+                "/api/users/login"
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "OTP Verification Error:",
+            error
+        );
+
+
+        return errorResponse(
+            res,
+            500,
+            "Unable to verify OTP. Please try again."
+        );
+
     }
-);
+
+});
 
 
 /* =====================================================
    RESEND OTP
 ===================================================== */
 
-router.post(
-    "/resend-otp",
-    async (req, res) => {
+router.post("/resend-otp", async (req, res) => {
+
+    try {
+
+        await dbConnect();
+
+        const {
+            email
+        } = req.body;
+
+
+        if (!email) {
+
+            return errorResponse(
+                res,
+                400,
+                "Email is required."
+            );
+
+        }
+
+
+        const normalizedEmail =
+            normalizeEmail(email);
+
+
+        const pendingUser =
+            await PendingUser.findOne({
+                email: normalizedEmail
+            });
+
+
+        if (!pendingUser) {
+
+            return errorResponse(
+                res,
+                404,
+                "Registration not found. Please register again."
+            );
+
+        }
+
+
+        /* ================= NEW OTP ================= */
+
+        const otp =
+            generateOTP();
+
+
+        pendingUser.otp =
+            otp;
+
+        pendingUser.otpExpires =
+            otpExpiry();
+
+
+        await pendingUser.save();
+
+
+        /* ================= SEND ================= */
 
         try {
-
-            await dbConnect();
-
-            const {
-                email
-            } = req.body;
-
-
-            if (!email) {
-
-                return errorResponse(
-                    res,
-                    400,
-                    "Email is required."
-                );
-
-            }
-
-
-            const normalizedEmail =
-                normalizeEmail(email);
-
-
-            const user =
-                await User.findOne({
-
-                    email:
-                        normalizedEmail
-
-                });
-
-
-            if (!user) {
-
-                return errorResponse(
-                    res,
-                    404,
-                    "Student not found."
-                );
-
-            }
-
-
-            if (user.isVerified) {
-
-                return errorResponse(
-                    res,
-                    409,
-                    "Email is already verified."
-                );
-
-            }
-
-
-            const otp =
-                generateOTP();
-
-
-            user.otp =
-                otp;
-
-            user.otpExpires =
-                otpExpiry();
-
-
-            await user.save();
-
 
             await sendOTP(
                 normalizedEmail,
                 otp
             );
 
-
-            return res.status(200).json({
-
-                success: true,
-
-                message:
-                    "New OTP sent successfully."
-
-            });
-
-
-        } catch (error) {
+        } catch (emailError) {
 
             console.error(
-                "Resend OTP Error:",
-                error
+                "Resend OTP Email Error:",
+                emailError
             );
 
             return errorResponse(
                 res,
                 500,
-                "Unable to resend OTP."
+                "Unable to resend OTP. Please try again."
             );
 
         }
 
+
+        return res.status(200).json({
+
+            success:
+                true,
+
+            message:
+                "New OTP sent successfully."
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Resend OTP Error:",
+            error
+        );
+
+
+        return errorResponse(
+            res,
+            500,
+            "Unable to resend OTP."
+        );
+
     }
-);
+
+});
 
 
 /* =====================================================
@@ -702,187 +835,203 @@ router.get("/login", (req, res) => {
    LOGIN
 ===================================================== */
 
-router.post(
-    "/login",
-    async (req, res) => {
+router.post("/login", async (req, res) => {
 
-        try {
+    try {
 
-            await dbConnect();
+        await dbConnect();
 
-            const {
-                email,
-                password
-            } = req.body;
+        const {
+            email,
+            password
+        } = req.body;
 
 
-            if (!email || !password) {
+        if (!email || !password) {
 
-                return errorResponse(
-                    res,
-                    400,
-                    "Email and password are required."
-                );
+            return errorResponse(
+                res,
+                400,
+                "Email and password are required."
+            );
 
-            }
-
-
-            const user =
-                await User.findOne({
-
-                    email:
-                        normalizeEmail(email)
-
-                });
+        }
 
 
-            if (!user) {
+        const user =
+            await User.findOne({
 
-                return errorResponse(
-                    res,
-                    401,
-                    "Invalid email or password."
-                );
+                email:
+                    normalizeEmail(email)
 
-            }
+            });
 
 
-            if (!user.isVerified) {
+        if (!user) {
 
-                return errorResponse(
-                    res,
-                    403,
-                    "Please verify your email first."
-                );
+            return errorResponse(
+                res,
+                401,
+                "Invalid email or password."
+            );
 
-            }
+        }
 
 
-            const validPassword =
+        if (!user.isVerified) {
+
+            return errorResponse(
+                res,
+                403,
+                "Please verify your email first."
+            );
+
+        }
+
+
+        /* =====================================================
+           PASSWORD CHECK
+        ===================================================== */
+
+        let validPassword;
+
+
+        if (USE_HASH) {
+
+            validPassword =
                 await bcrypt.compare(
                     password,
                     user.password
                 );
 
+        } else {
 
-            if (!validPassword) {
+            validPassword =
+                password ===
+                user.password;
 
-                return errorResponse(
-                    res,
-                    401,
-                    "Invalid email or password."
-                );
-
-            }
+        }
 
 
-            /* ================= JWT CHECK ================= */
+        if (!validPassword) {
 
-            if (!process.env.JWT_SECRET) {
+            return errorResponse(
+                res,
+                401,
+                "Invalid email or password."
+            );
 
-                console.error(
-                    "JWT_SECRET is missing."
-                );
-
-                return errorResponse(
-                    res,
-                    500,
-                    "JWT configuration is missing."
-                );
-
-            }
+        }
 
 
-            /* ================= CREATE TOKEN ================= */
+        /* =====================================================
+           JWT
+        ===================================================== */
 
-            const token =
-                jwt.sign(
-
-                    {
-                        id:
-                            user._id,
-
-                        role:
-                            user.role
-
-                    },
-
-                    process.env.JWT_SECRET,
-
-                    {
-                        expiresIn:
-                            "1d"
-                    }
-
-                );
-
-
-            return res.status(200).json({
-
-                success: true,
-
-                message:
-                    "Login successful.",
-
-                token,
-
-                user: {
-
-                    id:
-                        user._id,
-
-                    studentId:
-                        user.studentId,
-
-                    name:
-                        user.name,
-
-                    email:
-                        user.email,
-
-                    phone:
-                        user.phone,
-
-                    rollNo:
-                        user.rollNo,
-
-                    semester:
-                        user.semester,
-
-                    course:
-                        user.course,
-
-                    college:
-                        user.college,
-
-                    university:
-                        user.university,
-
-                    role:
-                        user.role
-
-                }
-
-            });
-
-
-        } catch (error) {
+        if (!process.env.JWT_SECRET) {
 
             console.error(
-                "Login Error:",
-                error
+                "JWT_SECRET is missing."
             );
 
             return errorResponse(
                 res,
                 500,
-                "Unable to login."
+                "JWT configuration is missing."
             );
 
         }
 
+
+        const token =
+            jwt.sign(
+
+                {
+                    id:
+                        user._id,
+
+                    role:
+                        user.role
+
+                },
+
+                process.env.JWT_SECRET,
+
+                {
+                    expiresIn:
+                        "1d"
+                }
+
+            );
+
+
+        return res.status(200).json({
+
+            success:
+                true,
+
+            message:
+                "Login successful.",
+
+            token,
+
+            user: {
+
+                id:
+                    user._id,
+
+                studentId:
+                    user.studentId,
+
+                name:
+                    user.name,
+
+                email:
+                    user.email,
+
+                phone:
+                    user.phone,
+
+                rollNo:
+                    user.rollNo,
+
+                semester:
+                    user.semester,
+
+                course:
+                    user.course,
+
+                college:
+                    user.college,
+
+                university:
+                    user.university,
+
+                role:
+                    user.role
+
+            }
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Login Error:",
+            error
+        );
+
+
+        return errorResponse(
+            res,
+            500,
+            "Unable to login."
+        );
+
     }
-);
+
+});
 
 
 /* =====================================================
@@ -920,7 +1069,8 @@ router.get(
 
             return res.status(200).json({
 
-                success: true,
+                success:
+                    true,
 
                 user
 
@@ -933,6 +1083,7 @@ router.get(
                 "Profile Error:",
                 error
             );
+
 
             return errorResponse(
                 res,
@@ -971,9 +1122,7 @@ router.get(
             const limit =
                 Math.min(
                     Math.max(
-                        Number(
-                            req.query.limit
-                        ) || 10,
+                        Number(req.query.limit) || 10,
                         1
                     ),
                     100
@@ -984,15 +1133,11 @@ router.get(
                 (page - 1) * limit;
 
 
-            /* ================= TOTAL ================= */
-
             const totalStudents =
                 await User.countDocuments({
                     role: "user"
                 });
 
-
-            /* ================= STUDENTS ================= */
 
             const students =
                 await User.find({
@@ -1016,7 +1161,8 @@ router.get(
 
             return res.status(200).json({
 
-                success: true,
+                success:
+                    true,
 
                 pagination: {
 
@@ -1052,6 +1198,7 @@ router.get(
                 error
             );
 
+
             return errorResponse(
                 res,
                 500,
@@ -1065,7 +1212,7 @@ router.get(
 
 
 /* =====================================================
-   STUDENT SEARCH / LOOKUP
+   STUDENT SEARCH
 ===================================================== */
 
 router.get(
@@ -1092,8 +1239,6 @@ router.get(
             const query = {};
 
 
-            /* ================= STUDENT ID ================= */
-
             if (studentId) {
 
                 query.studentId =
@@ -1104,8 +1249,6 @@ router.get(
             }
 
 
-            /* ================= ROLL NUMBER ================= */
-
             if (rollNo) {
 
                 query.rollNo =
@@ -1115,8 +1258,6 @@ router.get(
 
             }
 
-
-            /* ================= NAME ================= */
 
             if (name) {
 
@@ -1133,8 +1274,6 @@ router.get(
             }
 
 
-            /* ================= EMAIL ================= */
-
             if (email) {
 
                 query.email =
@@ -1145,8 +1284,6 @@ router.get(
             }
 
 
-            /* ================= PHONE ================= */
-
             if (phone) {
 
                 query.phone =
@@ -1154,8 +1291,6 @@ router.get(
 
             }
 
-
-            /* ================= SEMESTER ================= */
 
             if (semester) {
 
@@ -1186,8 +1321,6 @@ router.get(
             }
 
 
-            /* ================= NO QUERY ================= */
-
             if (
                 Object.keys(query).length === 0
             ) {
@@ -1201,8 +1334,6 @@ router.get(
             }
 
 
-            /* ================= SEARCH ================= */
-
             const students =
                 await User.find(query)
                     .select(
@@ -1215,7 +1346,8 @@ router.get(
 
             return res.status(200).json({
 
-                success: true,
+                success:
+                    true,
 
                 count:
                     students.length,
@@ -1231,6 +1363,7 @@ router.get(
                 "Student Search Error:",
                 error
             );
+
 
             return errorResponse(
                 res,
@@ -1289,15 +1422,15 @@ router.put(
             }
 
 
-            /* ================= NAME ================= */
-
             if (name !== undefined) {
 
                 const cleanName =
                     String(name).trim();
 
 
-                if (cleanName.length < 3) {
+                if (
+                    cleanName.length < 3
+                ) {
 
                     return errorResponse(
                         res,
@@ -1307,13 +1440,12 @@ router.put(
 
                 }
 
+
                 student.name =
                     cleanName;
 
             }
 
-
-            /* ================= PHONE ================= */
 
             if (phone !== undefined) {
 
@@ -1341,8 +1473,6 @@ router.put(
 
             }
 
-
-            /* ================= ROLL NUMBER ================= */
 
             if (rollNo !== undefined) {
 
@@ -1383,8 +1513,6 @@ router.put(
             }
 
 
-            /* ================= SEMESTER ================= */
-
             if (semester !== undefined) {
 
                 const semesterNumber =
@@ -1414,8 +1542,6 @@ router.put(
             }
 
 
-            /* ================= COURSE ================= */
-
             if (course !== undefined) {
 
                 student.course =
@@ -1423,8 +1549,6 @@ router.put(
 
             }
 
-
-            /* ================= COLLEGE ================= */
 
             if (college !== undefined) {
 
@@ -1434,8 +1558,6 @@ router.put(
             }
 
 
-            /* ================= UNIVERSITY ================= */
-
             if (university !== undefined) {
 
                 student.university =
@@ -1443,8 +1565,6 @@ router.put(
 
             }
 
-
-            /* ================= DATE OF BIRTH ================= */
 
             if (dateOfBirth !== undefined) {
 
@@ -1455,8 +1575,6 @@ router.put(
 
             }
 
-
-            /* ================= ADDRESS ================= */
 
             if (address !== undefined) {
 
@@ -1469,19 +1587,24 @@ router.put(
             await student.save();
 
 
+            const updatedStudent =
+                await User.findById(
+                    student._id
+                ).select(
+                    "-password -otp -otpExpires"
+                );
+
+
             return res.status(200).json({
 
-                success: true,
+                success:
+                    true,
 
                 message:
                     "Student updated successfully.",
 
                 student:
-                    await User.findById(
-                        student._id
-                    ).select(
-                        "-password -otp -otpExpires"
-                    )
+                    updatedStudent
 
             });
 
@@ -1492,6 +1615,7 @@ router.put(
                 "Update Student Error:",
                 error
             );
+
 
             return errorResponse(
                 res,
@@ -1545,7 +1669,8 @@ router.delete(
 
             return res.status(200).json({
 
-                success: true,
+                success:
+                    true,
 
                 message:
                     "Student deleted successfully."
@@ -1559,6 +1684,7 @@ router.delete(
                 "Delete Student Error:",
                 error
             );
+
 
             return errorResponse(
                 res,
@@ -1584,7 +1710,8 @@ router.get(
 
         return res.status(200).json({
 
-            success: true,
+            success:
+                true,
 
             message:
                 "Welcome Admin."
@@ -1600,3 +1727,5 @@ router.get(
 ===================================================== */
 
 module.exports = router;
+
+
