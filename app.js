@@ -2,7 +2,7 @@ const dns = require("dns");
 dns.setServers(["8.8.8.8"]);
 
 const express = require("express");
-app.use(express.static("public"));
+
 const path = require("path");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -18,6 +18,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static("public"));
 
 /* ================= VIEW ENGINE ================= */
 
