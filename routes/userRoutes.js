@@ -16,9 +16,7 @@ const {
 const sendOTP = require("../middleware/utils/sendEmail");
 
 
-/* =====================================================
-   PASSWORD MODE
-===================================================== */
+
 
 const USE_HASH = process.env.USE_HASH === "true";
 
