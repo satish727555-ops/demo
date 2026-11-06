@@ -12,7 +12,6 @@ const {
     protect,
     adminOnly
 } = require("../middleware/authMiddleware");
-
 const sendOTP = require("../middleware/utils/sendEmail");
 
 
@@ -182,12 +181,12 @@ router.post("/register", async (req, res) => {
         if (
             Number.isNaN(semesterNumber) ||
             semesterNumber < 1 ||
-            semesterNumber > 6
+            semesterNumber > 8
         ) {
             return errorResponse(
                 res,
                 400,
-                "Semester must be between 1 and 6."
+                "Semester must be between 1 and 8."
             );
         }
 
@@ -1301,13 +1300,13 @@ router.get(
                         semesterNumber
                     ) ||
                     semesterNumber < 1 ||
-                    semesterNumber > 6
+                    semesterNumber > 8
                 ) {
 
                     return errorResponse(
                         res,
                         400,
-                        "Semester must be between 1 and 6."
+                        "Semester must be between 1 and 8."
                     );
 
                 }
@@ -1522,13 +1521,13 @@ router.put(
                         semesterNumber
                     ) ||
                     semesterNumber < 1 ||
-                    semesterNumber > 6
+                    semesterNumber > 8
                 ) {
 
                     return errorResponse(
                         res,
                         400,
-                        "Semester must be between 1 and 6."
+                        "Semester must be between 1 and 8."
                     );
 
                 }
@@ -1725,5 +1724,6 @@ router.get(
 ===================================================== */
 
 module.exports = router;
+
 
 

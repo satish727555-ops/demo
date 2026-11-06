@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+﻿const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
     {
@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema(
         semester: {
             type: Number,
             min: 1,
-            max: 6
+            max: 8
         },
 
         course: {

@@ -1,0 +1,958 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduNexus | Smart Student Management System</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+--primary:#2563eb;
+--secondary:#7c3aed;
+--text:#0f172a;
+--muted:#64748b;
+--border:#e2e8f0;
+--danger:#dc2626;
+--success:#059669;
+}
+
+body{
+min-height:100vh;
+font-family:Inter,Arial,sans-serif;
+background:
+radial-gradient(circle at 10% 10%,rgba(37,99,235,.18),transparent 30%),
+radial-gradient(circle at 90% 90%,rgba(124,58,237,.18),transparent 30%),
+#f8fafc;
+color:var(--text);
+padding:35px 15px;
+}
+
+.container{width:min(100%,760px);margin:auto}
+
+.brand{text-align:center;margin-bottom:25px}
+
+.brand img{
+width:min(100%,560px);
+height:auto;
+object-fit:contain;
+display:block;
+margin:auto;
+}
+
+.card{
+background:rgba(255,255,255,.96);
+border:1px solid var(--border);
+border-radius:22px;
+padding:32px;
+box-shadow:0 25px 60px rgba(15,23,42,.10);
+}
+
+.topbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding-bottom:20px;
+border-bottom:1px solid var(--border);
+margin-bottom:22px;
+}
+
+.topbar-title{font-size:17px;font-weight:700}
+
+.secure{
+font-size:11px;
+color:var(--success);
+background:#ecfdf5;
+padding:7px 10px;
+border-radius:20px;
+}
+
+.section{margin:24px 0 15px}
+
+.section-title{
+font-size:14px;
+font-weight:800;
+color:#1e40af;
+margin-bottom:5px;
+}
+
+.section-line{
+height:2px;
+width:35px;
+background:linear-gradient(90deg,var(--primary),var(--secondary));
+border-radius:10px;
+margin-bottom:5px;
+}
+
+.section-subtitle{font-size:11px;color:var(--muted)}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));
+gap:16px;
+}
+
+.full{grid-column:1/-1}
+.group{margin-bottom:2px}
+
+label{
+display:block;
+font-size:12px;
+font-weight:700;
+color:#334155;
+margin-bottom:7px;
+}
+
+.required{color:var(--danger)}
+
+input,select,textarea{
+width:100%;
+border:1px solid var(--border);
+background:#f8fafc;
+color:var(--text);
+border-radius:11px;
+font-size:13px;
+outline:none;
+transition:.2s;
+}
+
+input,select{height:46px;padding:0 13px}
+textarea{min-height:90px;padding:12px 13px;resize:vertical}
+
+input:focus,select:focus,textarea:focus{
+background:white;
+border-color:var(--primary);
+box-shadow:0 0 0 4px rgba(37,99,235,.08);
+}
+
+input[readonly]{background:#f1f5f9;color:#475569}
+
+.password-box{position:relative}
+.password-box input{padding-right:45px}
+
+.eye{
+position:absolute;
+right:6px;
+top:6px;
+width:34px;
+height:34px;
+border:none;
+background:transparent;
+cursor:pointer;
+border-radius:8px;
+font-size:16px;
+}
+
+.btn{
+width:100%;
+height:48px;
+margin-top:22px;
+border:none;
+border-radius:11px;
+color:white;
+font-size:13px;
+font-weight:800;
+cursor:pointer;
+background:linear-gradient(135deg,#2563eb,#4f46e5,#7c3aed);
+box-shadow:0 10px 22px rgba(37,99,235,.20);
+}
+
+.btn:disabled{opacity:.6;cursor:not-allowed}
+
+.msg{
+display:none;
+margin-top:12px;
+padding:10px 12px;
+border-radius:9px;
+font-size:12px;
+text-align:center;
+}
+
+.msg.show{display:block}
+.success{background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}
+.error{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
+
+.login{
+text-align:center;
+margin-top:18px;
+font-size:12px;
+color:var(--muted);
+}
+
+.login a{
+color:var(--primary);
+font-weight:800;
+text-decoration:none;
+}
+
+.footer{
+text-align:center;
+margin-top:20px;
+color:#94a3b8;
+font-size:10px;
+}
+
+#otpSection{display:none;text-align:center}
+
+.otp-icon{
+width:70px;
+height:70px;
+margin:5px auto 18px;
+display:grid;
+place-items:center;
+border-radius:20px;
+background:linear-gradient(135deg,#dbeafe,#ede9fe);
+font-size:30px;
+}
+
+.otp-title{font-size:24px;font-weight:800;margin-bottom:7px}
+
+.otp-sub{
+color:var(--muted);
+font-size:12px;
+line-height:1.7;
+margin-bottom:22px;
+}
+
+.otp-email{color:var(--primary);font-weight:800}
+
+.otp-input{
+text-align:center;
+font-size:25px!important;
+font-weight:800;
+letter-spacing:8px;
+}
+
+.otp-actions{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-top:12px;
+}
+
+.secondary-btn{
+height:43px;
+border:1px solid var(--border);
+border-radius:10px;
+background:white;
+color:#334155;
+font-size:12px;
+font-weight:700;
+cursor:pointer;
+}
+
+.resend{color:var(--primary);border-color:#bfdbfe}
+
+@media(max-width:650px){
+body{padding:20px 12px}
+.card{padding:22px 17px;border-radius:18px}
+.grid{grid-template-columns:1fr}
+.full{grid-column:auto}
+.brand img{width:100%}
+.topbar{align-items:flex-start;gap:10px}
+.secure{font-size:9px}
+}
+
+@media(max-width:420px){
+.otp-actions{grid-template-columns:1fr}
+.otp-input{font-size:22px!important}
+}
+
+/* ===== EDUNEXUS PROFESSIONAL REDESIGN ===== */
+
+body {
+    min-height: 100vh;
+    padding: 35px 16px;
+    background:
+        radial-gradient(circle at 5% 10%, #dbeafe 0, transparent 35%),
+        radial-gradient(circle at 95% 90%, #bfdbfe 0, transparent 35%),
+        #eff6ff;
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+.container {
+    width: min(100%, 980px);
+    margin: auto;
+    background: #ffffff;
+    border: 1px solid #dbeafe;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 25px 65px rgba(15, 40, 85, .16);
+}
+
+.brand {
+    margin: 0;
+    padding: 22px 25px 15px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5edf8;
+}
+
+.brand img {
+    display: block;
+    width: min(100%, 460px);
+    max-height: 115px;
+    height: auto;
+    object-fit: contain;
+    margin: auto;
+}
+
+.card {
+    padding: 28px 36px;
+    background: #ffffff;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.topbar {
+    padding-bottom: 17px;
+    border-bottom: 1px solid #e5edf8;
+}
+
+.topbar-title {
+    color: #102d59;
+    font-size: 21px;
+    font-weight: 800;
+}
+
+.secure {
+    color: #047857;
+    background: #ecfdf5;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.section {
+    margin: 26px 0 16px;
+}
+
+.section-title {
+    color: #1646a0;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.section-subtitle {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.grid {
+    gap: 18px;
+}
+
+label {
+    font-size: 13px;
+    color: #263b59;
+}
+
+input, select, textarea {
+    background: #f8faff;
+    border: 1px solid #d7e1ef;
+    border-radius: 10px;
+}
+
+input:focus, select:focus, textarea:focus {
+    background: #ffffff;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, .10);
+}
+
+.btn {
+    height: 50px;
+    border-radius: 11px;
+    background: linear-gradient(110deg, #1685f8, #0751c7, #082f87);
+    box-shadow: 0 8px 20px rgba(15, 81, 190, .20);
+    font-size: 14px;
+}
+
+.login {
+    font-size: 13px;
+}
+
+.footer {
+    margin: 0;
+    padding: 17px 20px;
+    background: #082858;
+    color: #ffffff;
+    font-size: 12px;
+}
+
+#otpSection {
+    padding: 15px 0;
+}
+
+@media(max-width:650px) {
+    body {
+        padding: 15px 10px;
+    }
+
+    .container {
+        border-radius: 17px;
+    }
+
+    .brand {
+        padding: 18px 14px 12px;
+    }
+
+    .brand img {
+        width: min(100%, 380px);
+        max-height: 90px;
+    }
+
+    .card {
+        padding: 20px 17px;
+    }
+
+    .topbar-title {
+        font-size: 17px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .full {
+        grid-column: auto;
+    }
+
+    .footer {
+        font-size: 10px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- EDUNEXUS BRAND LOGO -->
+
+    <div class="brand">
+        <img src="/images/edunexus.png"
+             alt="EduNexus - Smart Student Management System">
+    </div>
+
+    <div class="card">
+
+        <!-- REGISTRATION SECTION -->
+
+        <section id="registerSection">
+
+            <div class="topbar">
+                <div class="topbar-title">Create Student Account</div>
+                <div class="secure">Secure Registration Secure Registration</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Account Information Account Information</div>
+                <div class="section-line"></div>
+                <div class="section-subtitle">Enter your basic account details</div>
+            </div>
+
+            <div class="grid">
+
+                <div class="group full">
+                    <label>Student Name <span class="required">*</span></label>
+                    <input id="username" type="text"
+                           autocomplete="name"
+                           placeholder="Enter your full name">
+                </div>
+
+                <div class="group">
+                    <label>Email Address <span class="required">*</span></label>
+                    <input id="email" type="email"
+                           autocomplete="email"
+                           placeholder="student@example.com">
+                </div>
+
+                <div class="group">
+                    <label>Password <span class="required">*</span></label>
+                    <div class="password-box">
+                        <input id="password" type="password"
+                               autocomplete="new-password"
+                               placeholder="Minimum 8 characters">
+                        <button type="button" class="eye" id="eye">Show</button>
+                    </div>
+                </div>
+
+            </div>
+
+                        <div class="section">
+                <div class="section-title">Academic Information</div>
+                <div class="section-line"></div>
+                <div class="section-subtitle">Provide your academic details</div>
+            </div>
+
+            <div class="grid">
+
+                <div class="group">
+                    <label>Roll Number <span class="required">*</span></label>
+                    <input id="rollNo" type="text" placeholder="BCA2026001">
+                </div>
+
+                <div class="group">
+                    <label>Phone Number <span class="required">*</span></label>
+                    <input id="phone" type="tel" maxlength="10"
+                           inputmode="numeric"
+                           placeholder="10 digit mobile number">
+                </div>
+
+                <div class="group">
+                    <label>Semester <span class="required">*</span></label>
+                    <select id="semester">
+                        <option value="">Select Semester</option>
+                    </select>
+                </div>
+
+                <div class="group">
+                    <label>Course <span class="required">*</span></label>
+                    <select id="course">
+                        <option value="">Select Course</option>
+                        <option value="BCA">BCA</option>
+                        <option value="MCA">MCA</option>
+                        <option value="B.Tech">B.Tech</option>
+                        <option value="MBA">MBA</option>
+                        <option value="BBA">BBA</option>
+                        <option value="B.Sc">B.Sc</option>
+                        <option value="M.Sc">M.Sc</option>
+                        <option value="Polytechnic">Polytechnic</option>
+                    </select>
+                </div>
+
+                <div class="group">
+                    <label>Date of Birth</label>
+                    <input id="dateOfBirth" type="date">
+                </div>
+
+                <div class="group">
+                    <label>University <span class="required">*</span></label>
+                    <select id="university">
+                        <option value="">Select University</option>
+                    </select>
+                </div>
+
+                <div class="group full">
+                    <label>College <span class="required">*</span></label>
+                    <select id="college" disabled>
+                        <option value="">First select University</option>
+                    </select>
+                </div>
+
+            </div>
+<div class="section">
+                <div class="section-title">Contact Information Contact Information</div>
+                <div class="section-line"></div>
+                <div class="section-subtitle">Add your current address</div>
+            </div>
+
+            <div class="group">
+                <label>Address</label>
+                <textarea id="address"
+                          placeholder="Enter your complete address"></textarea>
+            </div>
+
+            <button type="button" class="btn" id="registerBtn">
+                Create Student Account
+            </button>
+
+            <div id="registerMsg" class="msg"></div>
+
+            <div class="login">
+                Already have an account?
+                <a href="/api/users/login">Login here</a>
+            </div>
+
+        </section>
+
+        <!-- OTP SECTION -->
+
+        <section id="otpSection">
+
+            <div class="otp-icon">âœ‰ï¸</div>
+
+            <div class="otp-title">Verify Your Email</div>
+
+            <p class="otp-sub">
+                We've sent a 6-digit verification code to
+                <br>
+                <span class="otp-email" id="otpEmail"></span>
+            </p>
+
+            <div class="group">
+                <label>Verification Code</label>
+                <input id="otp" class="otp-input"
+                       type="text"
+                       inputmode="numeric"
+                       maxlength="6"
+                       autocomplete="one-time-code"
+                       placeholder="000000">
+            </div>
+
+            <button type="button" class="btn" id="verifyBtn">
+                Verify Email
+            </button>
+
+            <div id="otpMsg" class="msg"></div>
+
+            <div class="otp-actions">
+
+                <button type="button"
+                        class="secondary-btn resend"
+                        id="resendBtn">
+                    â†» Resend OTP
+                </button>
+
+                <button type="button"
+                        class="secondary-btn"
+                        id="backBtn">
+                    â† Back
+                </button>
+
+            </div>
+
+            <div class="footer">
+                ðŸ” Your email verification helps protect your student account.
+            </div>
+
+        </section>
+
+    </div>
+
+    <div class="footer">
+        &copy; 2026 EduNexus Â· Smart Student Management System
+    </div>
+
+</div>
+
+<script>
+
+const $ = id => document.getElementById(id);
+
+let userEmail = "";
+
+const val = id => $(id).value.trim();
+
+/* ================= DYNAMIC SEMESTER ================= */
+
+const courseDuration = {
+    "BCA": 6,
+    "MCA": 4,
+    "B.Tech": 8,
+    "MBA": 4,
+    "BBA": 6,
+    "B.Sc": 6,
+    "M.Sc": 4,
+    "Polytechnic": 6
+};
+
+$("course").addEventListener("change", function () {
+
+    const selectedCourse = this.value;
+    const totalSemesters = courseDuration[selectedCourse] || 0;
+    const semesterSelect = $("semester");
+
+    semesterSelect.innerHTML =
+        '<option value="">Select Semester</option>';
+
+    for (let i = 1; i <= totalSemesters; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = "Semester " + i;
+        semesterSelect.appendChild(option);
+    }
+
+});
+
+
+function showMessage(element,message,type){
+    element.textContent = message;
+    element.className = `msg show ${type}`;
+}
+
+/* PASSWORD SHOW / HIDE */
+
+$("eye").onclick = () => {
+
+    const password = $("password");
+
+    if(password.type === "password"){
+        password.type = "text";
+        $("eye").textContent = "Hide";
+    }else{
+        password.type = "password";
+        $("eye").textContent = "Show";
+    }
+
+};
+
+/* PHONE VALIDATION */
+
+$("phone").oninput = () => {
+    $("phone").value = $("phone").value
+        .replace(/\D/g,"")
+        .slice(0,10);
+};
+
+/* OTP INPUT */
+
+$("otp").oninput = () => {
+    $("otp").value = $("otp").value
+        .replace(/\D/g,"")
+        .slice(0,6);
+};
+
+/* REGISTER STUDENT */
+
+$("registerBtn").onclick = async () => {
+
+    const data = {
+
+        name: val("username"),
+        email: val("email"),
+        password: $("password").value,
+        rollNo: val("rollNo"),
+        phone: val("phone"),
+        semester: val("semester"),
+        course: val("course"),
+        college: val("college"),
+        university: val("university"),
+        dateOfBirth: val("dateOfBirth"),
+        address: val("address")
+
+    };
+
+    if(
+        !data.name ||
+        !data.email ||
+        !data.password ||
+        !data.rollNo ||
+        !data.phone ||
+        !data.semester ||
+        !data.course ||
+        !data.college ||
+        !data.university
+    ){
+        return showMessage(
+            $("registerMsg"),
+            "Please fill all required fields.",
+            "error"
+        );
+    }
+
+    if(data.password.length < 8){
+        return showMessage(
+            $("registerMsg"),
+            "Password must contain at least 8 characters.",
+            "error"
+        );
+    }
+
+    if(!/^[6-9]\d{9}$/.test(data.phone)){
+        return showMessage(
+            $("registerMsg"),
+            "Enter a valid 10-digit Indian mobile number.",
+            "error"
+        );
+    }
+
+    const btn = $("registerBtn");
+
+    btn.disabled = true;
+    btn.textContent = "Creating Account...";
+
+    try{
+
+        const response = await fetch("/api/users/register",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if(!response.ok){
+            throw new Error(result.message || "Registration failed.");
+        }
+
+        userEmail = data.email;
+
+        $("otpEmail").textContent = userEmail;
+
+        $("registerSection").style.display = "none";
+        $("otpSection").style.display = "block";
+
+        showMessage(
+            $("otpMsg"),
+            result.message || "OTP sent successfully.",
+            "success"
+        );
+
+    }catch(error){
+
+        showMessage(
+            $("registerMsg"),
+            error.message,
+            "error"
+        );
+
+    }finally{
+
+        btn.disabled = false;
+        btn.textContent = "Create Student Account";
+
+    }
+
+};
+
+/* VERIFY OTP */
+
+$("verifyBtn").onclick = async () => {
+
+    const code = val("otp");
+
+    if(code.length !== 6){
+        return showMessage(
+            $("otpMsg"),
+            "Please enter a valid 6-digit OTP.",
+            "error"
+        );
+    }
+
+    const btn = $("verifyBtn");
+
+    btn.disabled = true;
+    btn.textContent = "Verifying...";
+
+    try{
+
+        const response = await fetch("/api/users/verify-otp",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                email:userEmail,
+                otp:code
+            })
+        });
+
+        const result = await response.json();
+
+        if(!response.ok){
+            throw new Error(result.message || "Verification failed.");
+        }
+
+        showMessage(
+            $("otpMsg"),
+            result.message || "Email verified successfully.",
+            "success"
+        );
+
+        btn.textContent = "Verified âœ“";
+
+        setTimeout(() => {
+            location.href = "/api/users/login";
+        },1200);
+
+    }catch(error){
+
+        showMessage(
+            $("otpMsg"),
+            error.message,
+            "error"
+        );
+
+        btn.disabled = false;
+        btn.textContent = "Verify Email";
+
+    }
+
+};
+
+/* RESEND OTP */
+
+$("resendBtn").onclick = async () => {
+
+    if(!userEmail){
+        return showMessage(
+            $("otpMsg"),
+            "Email not found. Please register again.",
+            "error"
+        );
+    }
+
+    const btn = $("resendBtn");
+
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+
+    try{
+
+        const response = await fetch("/api/users/resend-otp",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                email:userEmail
+            })
+        });
+
+        const result = await response.json();
+
+        if(!response.ok){
+            throw new Error(result.message || "Unable to resend OTP.");
+        }
+
+        showMessage(
+            $("otpMsg"),
+            result.message || "OTP sent successfully.",
+            "success"
+        );
+
+    }catch(error){
+
+        showMessage(
+            $("otpMsg"),
+            error.message,
+            "error"
+        );
+
+    }finally{
+
+        btn.disabled = false;
+        btn.textContent = "â†» Resend OTP";
+
+    }
+
+};
+
+/* BACK BUTTON */
+
+$("backBtn").onclick = () => {
+
+    $("otpSection").style.display = "none";
+    $("registerSection").style.display = "block";
+
+    $("otp").value = "";
+    $("otpMsg").className = "msg";
+
+};
+
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+

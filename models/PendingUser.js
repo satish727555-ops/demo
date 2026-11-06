@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+﻿const mongoose = require("mongoose");
 
 const pendingUserSchema = new mongoose.Schema(
     {
@@ -65,7 +65,7 @@ const pendingUserSchema = new mongoose.Schema(
             type: Number,
             required: true,
             min: 1,
-            max: 6
+            max: 8
         },
 
 

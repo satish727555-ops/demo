@@ -1,0 +1,31 @@
+{
+  "state": "Uttar Pradesh",
+  "lastUpdated": "2026-11-06",
+  "categories": {
+    "central": [
+      {
+        "name": "Aligarh Muslim University",
+        "city": "Aligarh"
+      },
+      {
+        "name": "Banaras Hindu University",
+        "city": "Varanasi"
+      },
+      {
+        "name": "University of Allahabad",
+        "city": "Prayagraj"
+      },
+      {
+        "name": "Babasaheb Bhimrao Ambedkar University",
+        "city": "Lucknow"
+      },
+      {
+        "name": "Rani Lakshmi Bai Central Agricultural University",
+        "city": "Jhansi"
+      }
+    ],
+    "state": [],
+    "private": [],
+    "deemed": []
+  }
+}

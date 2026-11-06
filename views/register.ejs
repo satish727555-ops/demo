@@ -481,8 +481,8 @@ input:focus, select:focus, textarea:focus {
 
             </div>
 
-            <div class="section">
-                <div class="section-title">Academic Information Academic Information</div>
+                        <div class="section">
+                <div class="section-title">Academic Information</div>
                 <div class="section-line"></div>
                 <div class="section-subtitle">Provide your academic details</div>
             </div>
@@ -505,18 +505,38 @@ input:focus, select:focus, textarea:focus {
                     <label>Semester <span class="required">*</span></label>
                     <select id="semester">
                         <option value="">Select Semester</option>
-                        <option value="1">1st Semester</option>
-                        <option value="2">2nd Semester</option>
-                        <option value="3">3rd Semester</option>
-                        <option value="4">4th Semester</option>
-                        <option value="5">5th Semester</option>
-                        <option value="6">6th Semester</option>
                     </select>
                 </div>
 
                 <div class="group">
-                    <label>Course</label>
-                    <input value="BCA" readonly>
+                    <label>Course <span class="required">*</span></label>
+                    <select id="course">
+    <option value="">Select Course</option>
+    <option value="BCA">BCA</option>
+    <option value="MCA">MCA</option>
+    <option value="B.Tech">B.Tech</option>
+    <option value="M.Tech">M.Tech</option>
+    <option value="BBA">BBA</option>
+    <option value="MBA">MBA</option>
+    <option value="BA">BA</option>
+    <option value="MA">MA</option>
+    <option value="B.Sc">B.Sc</option>
+    <option value="M.Sc">M.Sc</option>
+    <option value="B.Com">B.Com</option>
+    <option value="M.Com">M.Com</option>
+    <option value="B.Ed">B.Ed</option>
+    <option value="LLB">LLB</option>
+    <option value="LLM">LLM</option>
+    <option value="B.Pharm">B.Pharm</option>
+    <option value="D.Pharm">D.Pharm</option>
+    <option value="MBBS">MBBS</option>
+    <option value="BDS">BDS</option>
+    <option value="BAMS">BAMS</option>
+    <option value="BHMS">BHMS</option>
+    <option value="GNM">GNM</option>
+    <option value="B.Sc Nursing">B.Sc Nursing</option>
+    <option value="Polytechnic">Polytechnic</option>
+</select>
                 </div>
 
                 <div class="group">
@@ -525,20 +545,49 @@ input:focus, select:focus, textarea:focus {
                 </div>
 
                 <div class="group">
-                    <label>College <span class="required">*</span></label>
-                    <input id="college"
-                           value="Microtek College of Management & Technology">
+                    <label>University <span class="required">*</span></label>
+                    <select id="university">
+    <option value="">Select University</option>
+    <option value="University of Lucknow">University of Lucknow</option>
+    <option value="Dr. A.P.J. Abdul Kalam Technical University (AKTU)">Dr. A.P.J. Abdul Kalam Technical University (AKTU)</option>
+    <option value="Chaudhary Charan Singh University">Chaudhary Charan Singh University</option>
+    <option value="Banaras Hindu University (BHU)">Banaras Hindu University (BHU)</option>
+    <option value="University of Allahabad">University of Allahabad</option>
+    <option value="Babasaheb Bhimrao Ambedkar University">Babasaheb Bhimrao Ambedkar University</option>
+    <option value="Deen Dayal Upadhyaya Gorakhpur University">Deen Dayal Upadhyaya Gorakhpur University</option>
+    <option value="Dr. Ram Manohar Lohia Avadh University">Dr. Ram Manohar Lohia Avadh University</option>
+    <option value="Mahatma Gandhi Kashi Vidyapith">Mahatma Gandhi Kashi Vidyapith</option>
+    <option value="Bundelkhand University">Bundelkhand University</option>
+    <option value="Dr. Bhimrao Ambedkar University">Dr. Bhimrao Ambedkar University</option>
+    <option value="Rohilkhand University">Rohilkhand University</option>
+    <option value="Veer Bahadur Singh Purvanchal University">Veer Bahadur Singh Purvanchal University</option>
+    <option value="Siddharth University">Siddharth University</option>
+    <option value="Khwaja Moinuddin Chishti Language University">Khwaja Moinuddin Chishti Language University</option>
+    <option value="King George's Medical University (KGMU)">King George's Medical University (KGMU)</option>
+    <option value="Sanjay Gandhi Postgraduate Institute">Sanjay Gandhi Postgraduate Institute</option>
+    <option value="CSJMU Kanpur">Chhatrapati Shahu Ji Maharaj University</option>
+    <option value="Integral University">Integral University</option>
+    <option value="Amity University Lucknow">Amity University Lucknow</option>
+    <option value="Sharda University">Sharda University</option>
+    <option value="Galgotias University">Galgotias University</option>
+    <option value="Shiv Nadar University">Shiv Nadar University</option>
+    <option value="Noida International University">Noida International University</option>
+    <option value="Teerthanker Mahaveer University">Teerthanker Mahaveer University</option>
+    <option value="GLA University">GLA University</option>
+    <option value="Bennett University">Bennett University</option>
+    <option value="Other">Other</option>
+</select>
                 </div>
 
                 <div class="group full">
-                    <label>University <span class="required">*</span></label>
-                    <input id="university"
-                           value="Veer Bahadur Singh Purvanchal University">
+                    <label>College <span class="required">*</span></label>
+                    <select id="college" disabled>
+                        <option value="">First select University</option>
+                    </select>
                 </div>
 
             </div>
-
-            <div class="section">
+<div class="section">
                 <div class="section-title">Contact Information Contact Information</div>
                 <div class="section-line"></div>
                 <div class="section-subtitle">Add your current address</div>
@@ -631,6 +680,150 @@ let userEmail = "";
 
 const val = id => $(id).value.trim();
 
+/* ================= DYNAMIC SEMESTER ================= */
+
+const courseDuration = {
+    "BCA": 6,
+    "M.Tech": 4,
+    "BA": 6,
+    "MA": 4,
+    "B.Com": 6,
+    "M.Com": 4,
+    "B.Ed": 4,
+    "LLB": 6,
+    "LLM": 4,
+    "B.Pharm": 8,
+    "D.Pharm": 4,
+    "MBBS": 9,
+    "BDS": 10,
+    "BAMS": 10,
+    "BHMS": 10,
+    "GNM": 6,
+    "B.Sc Nursing": 8,
+    "MCA": 4,
+    "B.Tech": 8,
+    "MBA": 4,
+    "BBA": 6,
+    "B.Sc": 6,
+    "M.Sc": 4,
+    "Polytechnic": 6
+};
+
+$("course").addEventListener("change", function () {
+
+    const selectedCourse = this.value;
+    const totalSemesters = courseDuration[selectedCourse] || 0;
+    const semesterSelect = $("semester");
+
+    semesterSelect.innerHTML =
+        '<option value="">Select Semester</option>';
+
+    for (let i = 1; i <= totalSemesters; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = "Semester " + i;
+        semesterSelect.appendChild(option);
+    }
+
+});
+
+
+/* ================= UNIVERSITY COLLEGE DATA ================= */
+
+const universityColleges = {
+    "University of Lucknow": [
+        "National PG College",
+        "Shri Jai Narain PG College",
+        "Isabella Thoburn College",
+        "Avadh Girls Degree College"
+    ],
+
+    "Dr. A.P.J. Abdul Kalam Technical University (AKTU)": [
+        "Institute of Engineering and Technology Lucknow",
+        "KIET Group of Institutions",
+        "JSS Academy of Technical Education",
+        "RKGIT Ghaziabad"
+    ],
+
+    "Chaudhary Charan Singh University": [
+        "Meerut College",
+        "NAS College Meerut",
+        "MMH College Ghaziabad",
+        "DAV College Muzaffarnagar"
+    ],
+
+    "Banaras Hindu University (BHU)": [
+        "Arya Mahila PG College",
+        "Vasanta College for Women",
+        "DAV PG College Varanasi"
+    ],
+
+    "University of Allahabad": [
+        "CMP Degree College",
+        "Ewing Christian College",
+        "Allahabad Degree College",
+        "Iswar Saran Degree College"
+    ],
+
+    "Dr. Bhimrao Ambedkar University": [
+        "St. John's College Agra",
+        "Agra College",
+        "RBS College Agra"
+    ],
+
+    "Bundelkhand University": [
+        "Bundelkhand University Campus",
+        "Government Degree College"
+    ],
+
+    "Integral University": [
+        "Integral University Campus"
+    ],
+
+    "Sharda University": [
+        "Sharda University Campus"
+    ],
+
+    "Galgotias University": [
+        "Galgotias University Campus"
+    ],
+
+    "Amity University Lucknow": [
+        "Amity University Lucknow Campus"
+    ],
+
+    "GLA University": [
+        "GLA University Campus"
+    ]
+};
+
+/* UNIVERSITY CHANGE EVENT */
+
+$("university").addEventListener("change", function () {
+
+    const collegeSelect = $("college");
+    const selectedUniversity = this.value;
+
+    collegeSelect.innerHTML =
+        '<option value="">Select College</option>';
+
+    const colleges = universityColleges[selectedUniversity] || [];
+
+    if (colleges.length === 0) {
+        collegeSelect.innerHTML +=
+            '<option value="Other / Not Listed">Other / Not Listed</option>';
+    } else {
+        colleges.forEach(function (college) {
+            const option = document.createElement("option");
+            option.value = college;
+            option.textContent = college;
+            collegeSelect.appendChild(option);
+        });
+    }
+
+    collegeSelect.disabled = false;
+
+});
 function showMessage(element,message,type){
     element.textContent = message;
     element.className = `msg show ${type}`;
@@ -680,7 +873,7 @@ $("registerBtn").onclick = async () => {
         rollNo: val("rollNo"),
         phone: val("phone"),
         semester: val("semester"),
-        course: "BCA",
+        course: val("course"),
         college: val("college"),
         university: val("university"),
         dateOfBirth: val("dateOfBirth"),
@@ -695,6 +888,7 @@ $("registerBtn").onclick = async () => {
         !data.rollNo ||
         !data.phone ||
         !data.semester ||
+        !data.course ||
         !data.college ||
         !data.university
     ){
@@ -911,5 +1105,13 @@ $("backBtn").onclick = () => {
 
 </body>
 </html>
+
+
+
+
+
+
+
+
 
 

@@ -78,7 +78,7 @@ if (!process.env.VERCEL) {
     const startServer = async () => {
         try {
             await dbConnect();
-            app.listen(PORT, () => {
+            app.listen(PORT, "0.0.0.0", () => {
                 console.log(`Server running on port ${PORT}`);
             });
         } catch (error) {
@@ -89,4 +89,5 @@ if (!process.env.VERCEL) {
 
     startServer();
 }
+
 
