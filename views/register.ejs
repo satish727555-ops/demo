@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -258,6 +258,170 @@ body{padding:20px 12px}
 .otp-actions{grid-template-columns:1fr}
 .otp-input{font-size:22px!important}
 }
+
+/* ===== EDUNEXUS PROFESSIONAL REDESIGN ===== */
+
+body {
+    min-height: 100vh;
+    padding: 35px 16px;
+    background:
+        radial-gradient(circle at 5% 10%, #dbeafe 0, transparent 35%),
+        radial-gradient(circle at 95% 90%, #bfdbfe 0, transparent 35%),
+        #eff6ff;
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+.container {
+    width: min(100%, 980px);
+    margin: auto;
+    background: #ffffff;
+    border: 1px solid #dbeafe;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 25px 65px rgba(15, 40, 85, .16);
+}
+
+.brand {
+    margin: 0;
+    padding: 22px 25px 15px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5edf8;
+}
+
+.brand img {
+    display: block;
+    width: min(100%, 460px);
+    max-height: 115px;
+    height: auto;
+    object-fit: contain;
+    margin: auto;
+}
+
+.card {
+    padding: 28px 36px;
+    background: #ffffff;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.topbar {
+    padding-bottom: 17px;
+    border-bottom: 1px solid #e5edf8;
+}
+
+.topbar-title {
+    color: #102d59;
+    font-size: 21px;
+    font-weight: 800;
+}
+
+.secure {
+    color: #047857;
+    background: #ecfdf5;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.section {
+    margin: 26px 0 16px;
+}
+
+.section-title {
+    color: #1646a0;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.section-subtitle {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.grid {
+    gap: 18px;
+}
+
+label {
+    font-size: 13px;
+    color: #263b59;
+}
+
+input, select, textarea {
+    background: #f8faff;
+    border: 1px solid #d7e1ef;
+    border-radius: 10px;
+}
+
+input:focus, select:focus, textarea:focus {
+    background: #ffffff;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, .10);
+}
+
+.btn {
+    height: 50px;
+    border-radius: 11px;
+    background: linear-gradient(110deg, #1685f8, #0751c7, #082f87);
+    box-shadow: 0 8px 20px rgba(15, 81, 190, .20);
+    font-size: 14px;
+}
+
+.login {
+    font-size: 13px;
+}
+
+.footer {
+    margin: 0;
+    padding: 17px 20px;
+    background: #082858;
+    color: #ffffff;
+    font-size: 12px;
+}
+
+#otpSection {
+    padding: 15px 0;
+}
+
+@media(max-width:650px) {
+    body {
+        padding: 15px 10px;
+    }
+
+    .container {
+        border-radius: 17px;
+    }
+
+    .brand {
+        padding: 18px 14px 12px;
+    }
+
+    .brand img {
+        width: min(100%, 380px);
+        max-height: 90px;
+    }
+
+    .card {
+        padding: 20px 17px;
+    }
+
+    .topbar-title {
+        font-size: 17px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .full {
+        grid-column: auto;
+    }
+
+    .footer {
+        font-size: 10px;
+    }
+}
+
 </style>
 </head>
 
@@ -280,11 +444,11 @@ body{padding:20px 12px}
 
             <div class="topbar">
                 <div class="topbar-title">Create Student Account</div>
-                <div class="secure">🔒 Secure Registration</div>
+                <div class="secure">Secure Registration Secure Registration</div>
             </div>
 
             <div class="section">
-                <div class="section-title">👤 Account Information</div>
+                <div class="section-title">Account Information Account Information</div>
                 <div class="section-line"></div>
                 <div class="section-subtitle">Enter your basic account details</div>
             </div>
@@ -311,14 +475,14 @@ body{padding:20px 12px}
                         <input id="password" type="password"
                                autocomplete="new-password"
                                placeholder="Minimum 8 characters">
-                        <button type="button" class="eye" id="eye">👁</button>
+                        <button type="button" class="eye" id="eye">Show</button>
                     </div>
                 </div>
 
             </div>
 
             <div class="section">
-                <div class="section-title">🎓 Academic Information</div>
+                <div class="section-title">Academic Information Academic Information</div>
                 <div class="section-line"></div>
                 <div class="section-subtitle">Provide your academic details</div>
             </div>
@@ -375,7 +539,7 @@ body{padding:20px 12px}
             </div>
 
             <div class="section">
-                <div class="section-title">📍 Contact Information</div>
+                <div class="section-title">Contact Information Contact Information</div>
                 <div class="section-line"></div>
                 <div class="section-subtitle">Add your current address</div>
             </div>
@@ -403,7 +567,7 @@ body{padding:20px 12px}
 
         <section id="otpSection">
 
-            <div class="otp-icon">✉️</div>
+            <div class="otp-icon">âœ‰ï¸</div>
 
             <div class="otp-title">Verify Your Email</div>
 
@@ -434,19 +598,19 @@ body{padding:20px 12px}
                 <button type="button"
                         class="secondary-btn resend"
                         id="resendBtn">
-                    ↻ Resend OTP
+                    â†» Resend OTP
                 </button>
 
                 <button type="button"
                         class="secondary-btn"
                         id="backBtn">
-                    ← Back
+                    â† Back
                 </button>
 
             </div>
 
             <div class="footer">
-                🔐 Your email verification helps protect your student account.
+                ðŸ” Your email verification helps protect your student account.
             </div>
 
         </section>
@@ -454,7 +618,7 @@ body{padding:20px 12px}
     </div>
 
     <div class="footer">
-        © 2026 EduNexus · Smart Student Management System
+        &copy; 2026 EduNexus Â· Smart Student Management System
     </div>
 
 </div>
@@ -480,10 +644,10 @@ $("eye").onclick = () => {
 
     if(password.type === "password"){
         password.type = "text";
-        $("eye").textContent = "🙈";
+        $("eye").textContent = "Hide";
     }else{
         password.type = "password";
-        $("eye").textContent = "👁";
+        $("eye").textContent = "Show";
     }
 
 };
@@ -652,7 +816,7 @@ $("verifyBtn").onclick = async () => {
             "success"
         );
 
-        btn.textContent = "Verified ✓";
+        btn.textContent = "Verified âœ“";
 
         setTimeout(() => {
             location.href = "/api/users/login";
@@ -725,7 +889,7 @@ $("resendBtn").onclick = async () => {
     }finally{
 
         btn.disabled = false;
-        btn.textContent = "↻ Resend OTP";
+        btn.textContent = "â†» Resend OTP";
 
     }
 
@@ -747,3 +911,5 @@ $("backBtn").onclick = () => {
 
 </body>
 </html>
+
+
