@@ -133,15 +133,31 @@ input[readonly]{background:#f1f5f9;color:#475569}
 
 .eye{
 position:absolute;
-right:6px;
+right:8px;
 top:6px;
 width:34px;
 height:34px;
 border:none;
 background:transparent;
+color:#64748b;
 cursor:pointer;
 border-radius:8px;
-font-size:16px;
+display:flex;
+align-items:center;
+justify-content:center;
+transition:all .2s ease;
+}
+.eye:hover{
+color:#2563eb;
+background:#eff6ff;
+}
+.eye:focus-visible{
+outline:2px solid #2563eb;
+outline-offset:2px;
+}
+.eye svg{
+width:20px;
+height:20px;
 }
 
 .btn{
@@ -475,7 +491,12 @@ input:focus, select:focus, textarea:focus {
                         <input id="password" type="password"
                                autocomplete="new-password"
                                placeholder="Minimum 8 characters">
-                        <button type="button" class="eye" id="eye">Show</button>
+                        <button type="button" class="eye" id="eye" aria-label="Show password" title="Show password">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
+<circle cx="12" cy="12" r="3"/>
+</svg>
+</button>
                     </div>
                 </div>
 
@@ -709,14 +730,15 @@ const courseDuration = {
     "Polytechnic": 6
 };
 
-$("course").addEventListener("change", function () {
-
-    const selectedCourse = this.value;
-    const totalSemesters = courseDuration[selectedCourse] || 0;
+function updateSemesterOptions() {
+    const courseSelect = $("course");
     const semesterSelect = $("semester");
 
-    semesterSelect.innerHTML =
-        '<option value="">Select Semester</option>';
+    if (!courseSelect || !semesterSelect) return;
+
+    const totalSemesters = courseDuration[courseSelect.value] || 0;
+
+    semesterSelect.innerHTML = '<option value="">Select Semester</option>';
 
     for (let i = 1; i <= totalSemesters; i++) {
         const option = document.createElement("option");
@@ -724,9 +746,10 @@ $("course").addEventListener("change", function () {
         option.textContent = "Semester " + i;
         semesterSelect.appendChild(option);
     }
+}
 
-});
-
+$("course").addEventListener("change", updateSemesterOptions);
+updateSemesterOptions();
 
 /* ================= UNIVERSITY COLLEGE DATA ================= */
 
@@ -735,14 +758,45 @@ const universityColleges = {
         "National PG College",
         "Shri Jai Narain PG College",
         "Isabella Thoburn College",
-        "Avadh Girls Degree College"
+        "Avadh Girls Degree College",
+        "A P Sen Memorial Girls Degree College",
+        "Ameer-Udaula Islamia Degree College",
+        "B S N V Degree College",
+        "Basudev Memorial Girls Degree College",
+        "Bhartiya Vidya Bhawan Girls Degree College",
+        "Bright Career Girls Degree College",
+        "Career Convent Girls Degree College",
+        "City Academy Degree College",
+        "DAV Degree College Lucknow",
+        "Dr. Asha Smriti Mahavidyalaya",
+        "Dr. Rajendra Prasad Memorial Degree College",
+        "Durga Shiksha Niketan Mahavidyalaya",
+        "Eras College of Management",
+        "Eram Girls Degree College",
+        "GSRM Memorial Degree College",
+        "Shri Guru Nanak Girls PG College",
+        "Gyanodaya Mahavidyalaya",
+        "Heera Lal Yadav Balika Degree College",
+        "IT Degree College Lucknow",
+        "Kalicharan Degree College",
+        "Karamat Husain Muslim Girls PG College",
+        "Khun Khun Ji Girls Degree College",
+        "Lucknow Christian College",
+        "Lucknow Degree College",
+        "Mumtaz PG College",
+        "Nari Shiksha Niketan PG College",
+        "Vidyant Hindu PG College",
+        "Lucknow Public College of Professional Studies",
+        "Bora Institute of Management Sciences",
+        "Goel Institute of Higher Studies"
     ],
 
     "Dr. A.P.J. Abdul Kalam Technical University (AKTU)": [
         "Institute of Engineering and Technology Lucknow",
         "KIET Group of Institutions",
         "JSS Academy of Technical Education",
-        "RKGIT Ghaziabad"
+        "RKGIT Ghaziabad",
+        "Microtek College of Management & Technology (MBA)"
     ],
 
     "Chaudhary Charan Singh University": [
@@ -794,6 +848,14 @@ const universityColleges = {
 
     "GLA University": [
         "GLA University Campus"
+    ],
+
+    "Mahatma Gandhi Kashi Vidyapith": [
+        "Microtek College of Management & Technology (Barai, Varanasi Campus)"
+    ],
+
+    "Veer Bahadur Singh Purvanchal University": [
+        "Microtek College of Management & Technology (Murtazabad, Jaunpur Campus)"
     ]
 };
 
@@ -829,20 +891,42 @@ function showMessage(element,message,type){
     element.className = `msg show ${type}`;
 }
 
-/* PASSWORD SHOW / HIDE */
+/* PROFESSIONAL PASSWORD SHOW / HIDE */
 
 $("eye").onclick = () => {
-
     const password = $("password");
+    const eye = $("eye");
 
-    if(password.type === "password"){
+    if (password.type === "password") {
         password.type = "text";
-        $("eye").textContent = "Hide";
-    }else{
-        password.type = "password";
-        $("eye").textContent = "Show";
-    }
 
+        eye.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 3l18 18"/>
+        <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/>
+        <path d="M9.9 5.2A11 11 0 0 1 12 5c6.4 0 10 7 10 7a15 15 0 0 1-3 3.8"/>
+        <path d="M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7a10 10 0 0 0 3.2-.5"/>
+        </svg>`;
+
+        eye.setAttribute("aria-label", "Hide password");
+        eye.title = "Hide password";
+
+    } else {
+        password.type = "password";
+
+        eye.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/>
+        <circle cx="12" cy="12" r="3"/>
+        </svg>`;
+
+        eye.setAttribute("aria-label", "Show password");
+        eye.title = "Show password";
+    }
 };
 
 /* PHONE VALIDATION */
@@ -1105,6 +1189,13 @@ $("backBtn").onclick = () => {
 
 </body>
 </html>
+
+
+
+
+
+
+
 
 
 
