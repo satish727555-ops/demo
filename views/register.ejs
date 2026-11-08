@@ -748,8 +748,18 @@ function updateSemesterOptions() {
     }
 }
 
-$("course").addEventListener("change", updateSemesterOptions);
-updateSemesterOptions();
+document.addEventListener("DOMContentLoaded", function () {
+    const courseSelect = $("course");
+    const semesterSelect = $("semester");
+
+    if (!courseSelect || !semesterSelect) {
+        console.error("Course or Semester dropdown not found");
+        return;
+    }
+
+    courseSelect.addEventListener("change", updateSemesterOptions);
+    updateSemesterOptions();
+});
 
 /* ================= UNIVERSITY COLLEGE DATA ================= */
 
@@ -1189,6 +1199,7 @@ $("backBtn").onclick = () => {
 
 </body>
 </html>
+
 
 
 
